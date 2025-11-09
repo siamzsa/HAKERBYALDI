@@ -1,247 +1,218 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="bn">
 <head>
-  <meta charset="UTF-8" />
-  <title>HACKER BY ALDI</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ডিভাইস ম্যানেজার অ্যাডমিন</title>
   <style>
-    body {
-      background: #000;
-      color: #00ff00;
-      font-family: monospace;
-      margin: 0;
-    }
-    .terminal {
-      padding: 20px;
-      height: 100vh;
-      overflow-y: auto;
-      white-space: pre-wrap;
-    }
-    .input-line {
-      display: flex;
-      align-items: center;
-      margin-top: 4px;
-    }
-    .prompt {
-      color: #00ff00;
-      user-select: none;
-    }
-    .terminal-input {
-      background: transparent;
-      border: none;
-      color: #00ff00;
-      outline: none;
-      font-family: monospace;
-      font-size: 16px;
-      width: 100%;
-    }
-    .title {
-      font-size: 24px;
-      font-weight: bold;
-      color: #00ff00;
-      margin-bottom: 20px;
-      font-family: monospace;
-      letter-spacing: 3px;
-      user-select: none;
-      text-transform: uppercase;
-    }
-    .signal-line {
-      display: flex;
-      align-items: center;
-      margin-top: 6px;
-      gap: 10px;
-      font-size: 16px;
-      user-select: text;
-    }
-    .checkbox-container {
-      width: 14px;
-      height: 14px;
-      border: 2px solid red;
-      border-radius: 4px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-    .checkbox-container.checked {
-      border-color: #0f0;
-      background-color: #0f0;
-      cursor: default;
-    }
-    .checkbox-container input[type="checkbox"] {
-      display: none;
-    }
-    .checkbox-container.checked::after {
-      content: "✔";
-      color: #000;
-      font-weight: bold;
-      font-size: 12px;
-      user-select: none;
-    }
+    :root{font-family: 'Segoe UI', Roboto, Arial, sans-serif}
+    body{max-width:1000px;margin:18px auto;padding:18px}
+    h1{font-size:20px;margin-bottom:6px}
+    .card{border:1px solid #ddd;padding:12px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+    label{display:block;margin-top:8px;font-weight:600}
+    input,select,button{padding:8px;border-radius:6px;border:1px solid #ccc;font-size:14px}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .col{flex:1 1 220px}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{border:1px solid #eee;padding:8px;text-align:left}
+    th{background:#f7f7f7}
+    .actions button{margin-right:6px}
+    .small{font-size:13px;color:#555}
+    .btn{cursor:pointer}
+    .btn-primary{background:#0b74de;color:#fff;border:none}
+    .btn-danger{background:#e04b4b;color:#fff;border:none}
+    .btn-ghost{background:transparent;border:1px solid #ccc}
+    .toggle{cursor:pointer}
+    .topbar{display:flex;gap:8px;align-items:center;justify-content:space-between}
+    .search{min-width:220px}
+    .controls{display:flex;gap:8px}
+    pre{background:#f6f8fa;padding:8px;border-radius:6px;overflow:auto}
+    @media(max-width:600px){.row{flex-direction:column}}
   </style>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-  <div class="terminal" id="terminal">
-    <div class="title">HACKER BY ALDI</div>
-    <div>> Step 1: Type market name (e.g., EUR/USD)</div>
-    <div>> Step 2: Type timeframe in minutes (e.g., 1)</div><br>
+  <h1>ডিভাইস ম্যানেজার অ্যাডমিন প্যানেল</h1>
+  <div class="card">
+    <div class="topbar">
+      <div class="search">
+        <input id="searchInput" placeholder="Search device_id বা key লিখুন" style="width:100%" />
+      </div>
+      <div class="controls">
+        <button class="btn btn-primary" id="exportBtn">JSON এক্সপোর্ট</button>
+        <button class="btn btn-ghost" id="importBtn">JSON ইনপোর্ট</button>
+        <button class="btn btn-ghost" id="clearStorage">LocalStorage ক্লিয়ার</button>
+      </div>
+    </div>
+
+    <form id="deviceForm" style="margin-top:12px">
+      <div class="row">
+        <div class="col">
+          <label>ডিভাইস আইডি</label>
+          <input id="device_id" required />
+        </div>
+        <div class="col">
+          <label>Key</label>
+          <input id="key" required />
+        </div>
+        <div class="col">
+          <label>Expiry Date</label>
+          <input id="expirydate" type="date" />
+        </div>
+        <div class="col">
+          <label>Allow Offline</label>
+          <select id="allowoffline">
+            <option value="true">Allowed (true)</option>
+            <option value="false">Not allowed (false)</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <button class="btn btn-primary" id="saveBtn">ক্রিয়েট / আপডেট করুন</button>
+        <button type="button" class="btn btn-ghost" id="resetBtn">রিসেট</button>
+      </div>
+    </form>
+
+    <table id="devicesTable">
+      <thead>
+        <tr>
+          <th>Device ID</th>
+          <th>Key</th>
+          <th>Expiry Date</th>
+          <th>AllowOffline</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <p class="small">CRUD + Firebase Realtime Database সমর্থিত।</p>
   </div>
 
   <script>
-    const terminal = document.getElementById('terminal');
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSy8m3iuH0de6K31q58DlDcm4RFsJfNTt0Y",
+      authDomain: "xsiam-8cd91.firebaseapp.com",
+      databaseURL: "https://xsiam-8cd91-default-rtdb.firebaseio.com",
+      projectId: "xsiam-8cd91",
+      storageBucket: "xsiam-8cd91.appspot.com",
+      messagingSenderId: "20529006593",
+      appId: "1:20529006593:web:xxxxx"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const dbRef = firebase.database().ref('devices');
 
-    const originalMarkets = [
-      "USD/BRL (OTC)", "USD/DZD (OTC)", "USD/EGP (OTC)", "USD/INR (OTC)", "NZD/CAD (OTC)",
-      "USD/IDR (OTC)", "USD/PKR (OTC)", "USD/COP (OTC)", "USD/ZAR (OTC)", "CAD/CHF (OTC)",
-      "USD/NGN (OTC)", "AUD/NZD (OTC)", "EUR/SGD (OTC)", "NZD/JPY (OTC)", "GBP/CHF (OTC)",
-      "USD/MXN (OTC)", "USD/PHP (OTC)", "USD/BDT (OTC)", "NZD/CHF (OTC)", "USD/ARS (OTC)",
-      "EUR/NZD (OTC)", "NZD/USD (OTC)", "GBP/NZD (OTC)", "AUD/CHF", "AUD/JPY", "CAD/JPY",
-      "CHF/JPY", "EUR/CAD", "EUR/CHF", "GBP/USD", "USD/JPY", "EUR/USD", "AUD/CAD", "EUR/AUD",
-      "GBP/CAD", "EUR/GBP", "EUR/JPY", "GBP/AUD", "GBP/JPY", "USD/CAD", "USD/CHF", "AUD/USD"
-    ];
+    // DOM
+    const tBody = document.querySelector('#devicesTable tbody');
+    const form = document.getElementById('deviceForm');
+    const deviceIdInput = document.getElementById('device_id');
+    const keyInput = document.getElementById('key');
+    const expiryInput = document.getElementById('expirydate');
+    const allowSelect = document.getElementById('allowoffline');
+    const saveBtn = document.getElementById('saveBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const searchInput = document.getElementById('searchInput');
 
-    function normalizeMarket(market) {
-      return market.replace(/[\s\/\(\)]/g, '').toUpperCase();
-    }
+    let devices = [];
+    let editIndex = -1;
 
-    const normalizedMarketMap = new Map(originalMarkets.map(m => [normalizeMarket(m), m]));
+    // Firebase থেকে লোড
+    dbRef.on('value', snapshot => {
+      devices = snapshot.val() ? Object.values(snapshot.val()) : [];
+      renderTable();
+    });
 
-    let state = { market: null, timeframe: null };
-
-    function createInputLine() {
-      const line = document.createElement('div'); 
-      line.classList.add('input-line');
-      const prompt = document.createElement('span'); 
-      prompt.classList.add('prompt'); 
-      prompt.innerText = '> ';
-      const input = document.createElement('input'); 
-      input.classList.add('terminal-input'); 
-      input.autofocus = true;
-      input.addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
-          const cmd = input.value.trim();
-          if (!cmd) return;
-          line.remove();
-          addLine(`> ${cmd}`);
-          processInput(cmd);
-        }
+    function renderTable(filter=''){
+      tBody.innerHTML = '';
+      const list = devices.filter(d => {
+        if(!filter) return true;
+        const q = filter.toLowerCase();
+        return d.device_id.toLowerCase().includes(q) || (d.key||'').toLowerCase().includes(q);
       });
-      line.appendChild(prompt); 
-      line.appendChild(input);
-      terminal.appendChild(line);
-      input.focus();
-      terminal.scrollTop = terminal.scrollHeight;
-    }
-
-    function addLine(text) {
-      const line = document.createElement('div');
-      line.innerText = text;
-      terminal.appendChild(line);
-      terminal.scrollTop = terminal.scrollHeight;
-    }
-
-    function addSignalLine(text) {
-      const line = document.createElement('div');
-      line.classList.add('signal-line');
-
-      const checkboxContainer = document.createElement('label');
-      checkboxContainer.classList.add('checkbox-container');
-
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-
-      checkbox.addEventListener('change', () => {
-        if (checkbox.checked) {
-          checkboxContainer.classList.add('checked');
-          checkbox.disabled = true;
-          checkboxContainer.style.cursor = 'default';
-        }
+      list.forEach((d, idx)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${d.device_id}</td>
+          <td>${d.key}</td>
+          <td>${d.expirydate || ''}</td>
+          <td><input type="checkbox" ${d.Allowoffline? 'checked':''} data-idx="${idx}" class="allow-toggle" /></td>
+          <td class="actions">
+            <button class="btn btn-ghost" data-action="edit" data-idx="${idx}">Edit</button>
+            <button class="btn btn-danger" data-action="delete" data-idx="${idx}">Delete</button>
+          </td>
+        `;
+        tBody.appendChild(tr);
       });
-
-      checkboxContainer.appendChild(checkbox);
-
-      const textSpan = document.createElement('span');
-      textSpan.textContent = text;
-
-      line.appendChild(textSpan);
-      line.appendChild(checkboxContainer);
-      terminal.appendChild(line);
-      terminal.scrollTop = terminal.scrollHeight;
+      document.querySelectorAll('.allow-toggle').forEach(el => {
+        el.addEventListener('change', e => {
+          const i = Number(el.getAttribute('data-idx'));
+          devices[i].Allowoffline = el.checked;
+          saveToFirebase();
+        });
+      });
+      document.querySelectorAll('button[data-action]').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const action = btn.getAttribute('data-action');
+          const i = Number(btn.getAttribute('data-idx'));
+          if(action === 'edit') startEdit(i);
+          if(action === 'delete') doDelete(i);
+        });
+      });
     }
 
-    function formatTime(d) {
-      return d.toTimeString().slice(0,5);
+    function startEdit(i){
+      const d = devices[i];
+      editIndex = i;
+      deviceIdInput.value = d.device_id;
+      keyInput.value = d.key;
+      expiryInput.value = d.expirydate.split('-').reverse().join('-');
+      allowSelect.value = d.Allowoffline ? 'true':'false';
+      saveBtn.textContent = 'আপডেট করুন';
     }
 
-    // Improved signal logic with multiple random indicators in background
-    function generateSignalAdvanced() {
-      const smaShort = 1 + Math.random() * 0.5;
-      const smaLong = 1 + Math.random() * 0.5;
-      const rsi = Math.floor(Math.random() * 61) + 20;
-      const macdDiff = (Math.random() - 0.5) * 2;
-      const stochastic = Math.random() * 100;
-
-      if (smaShort > smaLong && rsi >= 50 && rsi <= 70 && macdDiff > 0 && stochastic < 80) return 'CALL';
-
-      if (smaShort < smaLong && rsi >= 30 && rsi <= 50 && macdDiff < 0 && stochastic > 20) return 'PUT';
-
-      return Math.random() > 0.55 ? 'CALL' : 'PUT';
+    function doDelete(i){
+      if(!confirm('আপনি কি এই ডিভাইস মুছে ফেলতে চান?')) return;
+      devices.splice(i,1);
+      saveToFirebase();
     }
 
-    function scheduleFutureSignal(tf) {
-      const now = new Date();
-      const tfMillis = tf * 60000;
-      const nextCandleTime = new Date(Math.ceil(now.getTime() / tfMillis) * tfMillis);
-      const signalTime = new Date(nextCandleTime.getTime() - 2 * 60000);
-      const delay = signalTime - now;
+    function resetForm(){
+      editIndex = -1;
+      form.reset();
+      saveBtn.textContent = 'ক্রিয়েট / আপডেট করুন';
+    }
 
-      const finalSignalTime = formatTime(nextCandleTime);
-      const sig = generateSignalAdvanced();
+    function saveToFirebase(){
+      const obj = {};
+      devices.forEach(d=>{
+        obj[d.device_id] = d;
+      });
+      dbRef.set(obj);
+    }
 
-      if (delay <= 0) {
-        addSignalLine(`${finalSignalTime} - ${sig} - ${state.market}`);
-        reset();
-      } else {
-        setTimeout(() => {
-          addSignalLine(`${finalSignalTime} - ${sig} - ${state.market}`);
-          reset();
-        }, delay);
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const device_id = deviceIdInput.value.trim();
+      const key = keyInput.value.trim();
+      const expiry = expiryInput.value ? expiryInput.value.split('-').reverse().join('-') : '';
+      const allow = allowSelect.value === 'true';
+      const payload = { device_id, key, expirydate: expiry, Allowoffline: allow };
+      if(editIndex >=0){
+        devices[editIndex] = payload;
+      }else{
+        const idx = devices.findIndex(d=>d.device_id===device_id);
+        if(idx>=0){ devices[idx] = payload; }
+        else{ devices.push(payload); }
       }
-    }
+      saveToFirebase();
+      resetForm();
+    });
 
-    function reset() {
-      state.market = null;
-      state.timeframe = null;
-      createInputLine();
-    }
-
-    function processInput(cmd) {
-      if (!state.market) {
-        const n = normalizeMarket(cmd);
-        if (!normalizedMarketMap.has(n)) {
-          addLine("❌ Invalid market!");
-          createInputLine();
-          return;
-        }
-        state.market = normalizedMarketMap.get(n);
-        addLine(`Market set to: ${state.market}`);
-        addLine("Type timeframe in minutes (1, 3, 5, 15, 30)");
-        createInputLine();
-      } else if (!state.timeframe) {
-        const tf = parseInt(cmd);
-        if (isNaN(tf) || tf <= 0) {
-          addLine("❌ Invalid timeframe!");
-          createInputLine();
-          return;
-        }
-        state.timeframe = tf;
-        addLine(`Timeframe set to: ${state.timeframe} min`);
-        addLine(`Waiting for next signal for ${state.market}...`);
-        scheduleFutureSignal(tf);
-      }
-    }
-
-    createInputLine();
+    resetBtn.addEventListener('click', resetForm);
+    searchInput.addEventListener('input', e=> renderTable(e.target.value));
   </script>
 </body>
 </html>
